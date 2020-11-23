@@ -7,6 +7,7 @@ public class ControllerClient : MonoBehaviour
     public float verticalSpeed;
     public float horizontalSpeed;
     public Camera camera;
+    public float shootDuration = 0.2f;
     private LineRenderer lineRenderer;
 
     // Start is called before the first frame update
@@ -30,11 +31,13 @@ public class ControllerClient : MonoBehaviour
         }
         transform.eulerAngles = new Vector3(0, ea.y, z);
 
-        if (Input.GetButton("Fire1")) {
-            RaycastHit rayCastHit;
-            if (Physics.Raycast(camera.transform.position, camera.transform.TransformDirection(Vector3.forward), out rayCastHit, Mathf.Infinity, 255)) {
-                StopCoroutine(TurnOffLine());
-                Color color = (transform.eulerAngles.y + 90f) % 360 < 180f ? Color.green : Color.red;
+        
+        RaycastHit rayCastHit;
+        if (Physics.Raycast(camera.transform.position, camera.transform.TransformDirection(Vector3.forward), out rayCastHit, Mathf.Infinity, 255)) {
+            StopCoroutine(TurnOffLine());
+            Color color = (transform.eulerAngles.y + 90f) % 360 < 180f ? Color.green : Color.red;
+            GetComponent<Renderer>().material.color = color;
+            if (Input.GetButton("Fire1")) {
                 lineRenderer.startColor = color;
                 lineRenderer.endColor = color;
                 Vector3[] positions = new Vector3[2];
@@ -45,11 +48,13 @@ public class ControllerClient : MonoBehaviour
                 lineRenderer.enabled = true;
                 StartCoroutine(rayCastHit.transform.gameObject.GetComponent<Boom>().Vanish());
             }
+        } else {
+            GetComponent<Renderer>().material.color = Color.white;
         }
     }
 
     IEnumerator TurnOffLine() {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(shootDuration);
         lineRenderer.enabled = false;
         yield return null;
     }
